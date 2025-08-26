@@ -28,11 +28,24 @@
       }
     );
 
-    devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShellNoCC {
-      buildInputs = [
-        nixpkgs.legacyPackages.x86_64-linux.hello
-      ];
-    };
+    devShells = eachSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        default = pkgs.mkShellNoCC {
+          buildInputs = [
+            pkgs.hello
+            pkgs.alejandra
+          ];
+        };
+      }
+    );
+
+    # devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShellNoCC {
+    #   buildInputs = [
+    #     nixpkgs.legacyPackages.x86_64-linux.hello
+    #   ];
+    # };
 
     # packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
     # packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
