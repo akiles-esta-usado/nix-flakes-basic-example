@@ -32,7 +32,7 @@
     ];
   in {
     overlays = {
-      default = lib.composeManyExtension [
+      default = lib.composeManyExtensions [
         (
           final: prev: let
             callPackage = lib.callPackageWith final;
@@ -53,10 +53,11 @@
 
     packages = eachSystem (
       system: let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = self.legacyPackages.${system};
+        self_pkgs = self.packages.${system};
       in {
         hello = pkgs.hello;
-        default = self.packages.${system}.hello;
+        default = self_pkgs.hello;
       }
     );
 
