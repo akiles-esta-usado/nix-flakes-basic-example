@@ -9,7 +9,7 @@
   outputs = { 
     self,
     nixpkgs,
-    ... }:
+    ... } @ inputs:
   let
     lib = nixpkgs.lib;
     eachSystem = lib.genAttrs [
@@ -28,7 +28,13 @@
       }
     );
 
-    # packages.x86_64-linux.hello = pkgs.hello;
+    devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShellNoCC {
+      buildInputs = [
+        nixpkgs.legacyPackages.x86_64-linux.hello
+      ];
+    };
+
+    # packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
     # packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
 
   };
