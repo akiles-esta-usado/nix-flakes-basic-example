@@ -14,11 +14,13 @@
     lib = nixpkgs.lib;
     eachSystem = lib.genAttrs [
       "x86_64-linux"
-      # "aarch64-linux"
-      # "x86_64-darwin"
-      # "aarch64-darwin"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
     ];
   in {
+    # packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
+    # packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
     packages = eachSystem (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -28,6 +30,11 @@
       }
     );
 
+    # devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShellNoCC {
+    #   buildInputs = [
+    #     nixpkgs.legacyPackages.x86_64-linux.hello
+    #   ];
+    # };
     devShells = eachSystem (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -40,15 +47,6 @@
         };
       }
     );
-
-    # devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShellNoCC {
-    #   buildInputs = [
-    #     nixpkgs.legacyPackages.x86_64-linux.hello
-    #   ];
-    # };
-
-    # packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-    # packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
   };
 }
 /*
