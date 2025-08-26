@@ -6,11 +6,11 @@
     nixpkgs.follows = "librelane/nix-eda/nixpkgs";
   };
 
-  outputs = { 
+  outputs = {
     self,
     nixpkgs,
-    ... } @ inputs:
-  let
+    ...
+  } @ inputs: let
     lib = nixpkgs.lib;
     eachSystem = lib.genAttrs [
       "x86_64-linux"
@@ -19,8 +19,8 @@
       # "aarch64-darwin"
     ];
   in {
-    packages = eachSystem (system:
-      let
+    packages = eachSystem (
+      system: let
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         hello = pkgs.hello;
@@ -28,8 +28,8 @@
       }
     );
 
-    devShells = eachSystem (system:
-      let
+    devShells = eachSystem (
+      system: let
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         default = pkgs.mkShellNoCC {
@@ -49,13 +49,24 @@
 
     # packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
     # packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
-
   };
 }
+/*
+legacyPackages
+- Es un nombre sustituto al de "packages"
+- `nix flake show` sería horriblemente lento si se reutilizara el mismo nombre
+- Por defecto, no muestra paquetes listados en "legacyPackages".
+*/
+/*
+El formato usado por "alejandra" tiene los siguientes criterios:
 
-/**
-  legacyPackages
-  - Es un nombre sustituto al de "packages"
-  - `nix flake show` sería horriblemente lento si se reutilizara el mismo nombre
-  - Por defecto, no muestra paquetes listados en "legacyPackages".
- */
+- lambda functions empiezan en nueva línea y con un nivel de identación adicional
+- la declaración de función es como sigue
+
+system: let
+  initial = assignments;
+in {
+  atrrSet = values
+}
+*/
+
