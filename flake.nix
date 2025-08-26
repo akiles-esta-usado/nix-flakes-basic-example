@@ -31,6 +31,26 @@
       "aarch64-darwin"
     ];
   in {
+    overlays = {
+      default = lib.composeManyExtension [
+        (
+          final: prev: let
+            callPackage = lib.callPackageWith final;
+          in {
+            openvaf = callPackage ./openvaf.nix {};
+          }
+        )
+      ];
+    };
+
+    legacyPackages = eachSystem (
+      system:
+        import nixpkgs {
+          inherit system;
+          overlays = [self.overlays.default];
+        }
+    );
+
     packages = eachSystem (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -39,6 +59,23 @@
         default = self.packages.${system}.hello;
       }
     );
+
+    # packages = eachSystem (
+    #   system: let
+    #     pkgs = self.legacyPackages.${system};
+    #   in
+    #     {
+    #       inherit (pkgs) magic magic-vlsi netgen klayout klayout-gdsfactory tclFull tk-x11 iverilog verilator xschem ngspice bitwuzla yosys yosys-sby yosys-eqy yosys-lighter yosys-slang;
+    #       inherit (pkgs.python3.pkgs) gdsfactory gdstk tclint;
+    #     }
+    #     // lib.optionalAttrs self.legacyPackages."${system}".stdenv.hostPlatform.isLinux {
+    #       inherit (pkgs) xyce;
+    #       inherit (pkgs.python3.pkgs) cocotb;
+    #     }
+    #     // lib.optionalAttrs self.legacyPackages."${system}".stdenv.hostPlatform.isx86_64 {
+    #       inherit (pkgs) yosys-ghdl;
+    #     }
+    # );
 
     devShells = eachSystem (
       system: let
