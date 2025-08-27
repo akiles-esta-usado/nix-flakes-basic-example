@@ -139,7 +139,15 @@
     },
     "root": {
       "inputs": {
+        "ciel": [
+          "librelane",
+          "ciel"
+        ],
         "librelane": "librelane",
+        "nix-eda": [
+          "librelane",
+          "nix-eda"
+        ],
         "nixpkgs": [
           "librelane",
           "nix-eda",

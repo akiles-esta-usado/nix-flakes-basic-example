@@ -15,6 +15,8 @@
   inputs = {
     librelane.url = "github:librelane/librelane?ref=2.4.0";
     nixpkgs.follows = "librelane/nix-eda/nixpkgs";
+    nix-eda.follows = "librelane/nix-eda";
+    ciel.follows = "librelane/ciel";
   };
 
   outputs = {
@@ -47,49 +49,73 @@
       system:
         import nixpkgs {
           inherit system;
-          overlays = [self.overlays.default];
+          overlays = [
+            librelane.inputs.nix-eda.overlays.default
+            librelane.overlays.default
+            self.overlays.default
+          ];
         }
     );
 
+    # We use the "self.legacyPackages" attribute to get dependencies
+    # Can / Should we import from an inputs' "packages" attribute and when?
     packages = eachSystem (
-      system: let
-        pkgs = self.legacyPackages.${system};
-        self_pkgs = self.packages.${system};
-      in {
-        hello = pkgs.hello;
-        default = self_pkgs.hello;
+      system: {
+        inherit
+          (self.legacyPackages.${system})
+          hello
+          # From nix-eda
+          magic # layout
+          magic-vlsi
+          netgen # LVS
+          klayout # Layout
+          klayout-gdsfactory
+          surelog # ?
+          tclFull
+          tk-x11
+          # iverilog
+          verilator
+          xschem # Schematics
+          # ngspice
+          bitwuzla
+          yosys
+          yosys-sby
+          yosys-eqy
+          yosys-f4pga-sdc # ?
+          yosys-lighter
+          # yosys-slang
+          yosys-synlig-sv # ?
+          yosys-ghdl # ?
+          yosysFull
+          # From librelane
+          openroad
+          openroad-abc
+          opensta
+          ;
+        inherit
+          (self.legacyPackages.${system}.python3.pkgs)
+          # From nix-eda
+          gdsfactory
+          gdstk
+          # tclint # Linter
+          # From librelane
+          librelane
+          ;
+        default = self.packages.${system}.hello;
       }
     );
 
-    # packages = eachSystem (
-    #   system: let
-    #     pkgs = self.legacyPackages.${system};
-    #   in
-    #     {
-    #       inherit (pkgs) magic magic-vlsi netgen klayout klayout-gdsfactory tclFull tk-x11 iverilog verilator xschem ngspice bitwuzla yosys yosys-sby yosys-eqy yosys-lighter yosys-slang;
-    #       inherit (pkgs.python3.pkgs) gdsfactory gdstk tclint;
-    #     }
-    #     // lib.optionalAttrs self.legacyPackages."${system}".stdenv.hostPlatform.isLinux {
-    #       inherit (pkgs) xyce;
-    #       inherit (pkgs.python3.pkgs) cocotb;
-    #     }
-    #     // lib.optionalAttrs self.legacyPackages."${system}".stdenv.hostPlatform.isx86_64 {
-    #       inherit (pkgs) yosys-ghdl;
-    #     }
-    # );
-
     devShells = eachSystem (
       system: let
-        pkgs = nixpkgs.legacyPackages.${system};
         librelane_pkgs = librelane.legacyPackages.${system};
+        self_pkgs = self.packages.${system};
       in {
-        default = pkgs.mkShellNoCC {
+        default = self.legacyPackages.${system}.mkShellNoCC {
           packages = [
-            pkgs.hello
+            self_pkgs.magic
             librelane_pkgs.ciel # Download pdks
             librelane_pkgs.xschem # schematics
             librelane_pkgs.ngspice # simulations
-            librelane_pkgs.magic # layout
             librelane_pkgs.klayout # layout
             librelane_pkgs.netgen # LVS
             librelane_pkgs.klayout-gdsfactory
@@ -98,12 +124,13 @@
             librelane_pkgs.python3.pkgs.psutil
             # librelane_pkgs.python3.pkgs.cace # Simulation framework
 
-            librelane_pkgs.yosysFull # RTL Synthesis
-            librelane_pkgs.openroad # Place and Route
-            librelane_pkgs.openroad-abc # Seq logic synthesis & Formal Verification
-            librelane_pkgs.verilator # Simulation
-            librelane_pkgs.opensta
+            self_pkgs.openroad # Place and Route
+            self_pkgs.openroad-abc # Seq logic synthesis & Formal Verification
+            self_pkgs.opensta
             librelane_pkgs.python3.pkgs.librelane # Digital flow
+            librelane_pkgs.yosysFull # RTL Synthesis
+            librelane_pkgs.verilator # Simulation
+            # librelane_pkgs.iverilog # Simulation
             librelane_pkgs.python3.pkgs.gdsfactory # Geometric
             librelane_pkgs.python3.pkgs.cocotb # Simulation framework
           ];
